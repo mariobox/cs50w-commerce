@@ -1,0 +1,91 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+
+<h1>{{ listing.title }}
+
+    {% if user.is_authenticated %}
+    <!-- Two hrefs with two stacked icons each - one showing and one hidden -->
+    <a href="#" onclick=
+        "favListing('{% url 'auctions:listing_unfavorite' listing.id %}', {{ listing.id }} )"
+        {% if listing.id not in favorites %} style="display: none;" {% endif %}
+        id="favorite_star_{{listing.id}}">
+    <span class="fa-stack" style="vertical-align: middle;">
+    <i class="fa fa-heart fa-stack-1x" style="color: red;"></i>
+    <i class="fa fa-heart-o fa-stack-1x" style="display: none;"></i>
+    </span>
+    </a>
+    <!-- the second href -->
+    <a href="#" onclick=
+        "favListing('{% url 'auctions:listing_favorite' listing.id %}', {{ listing.id }} )"
+        {% if listing.id in favorites %} style="display: none;" {% endif %}
+        id="unfavorite_star_{{listing.id}}">
+    <span class="fa-stack" style="vertical-align: middle;">
+    <i class="fa fa-heart fa-stack-1x" style="display: none; color: red;"></i>
+    <i class="fa fa-heart-o fa-stack-1x"></i>
+    </span>
+    </a>
+    {% endif %}
+</h1>    
+            
+<img src="{{listing.image}}" width="300px" />
+<p>{{ listing.text }}</p>
+<p><strong>Category: </strong>{{listing.category}}</p>
+<p><strong>Seller: </strong>{{listing.owner}}</p>
+<p><strong>Price: </strong>${{ listing.price }}</p>   
+<p><strong>Initial Bid: </strong>${{ listing.initial_bid }}</p>
+<p><strong>Current Bid: </strong>${{current_bid}} {% if bids %}(<strong>{{high_bid.owner}}</strong>){% endif %}</p>   
+{% if listing.active == False %}
+    {% if request.user == high_bid.owner %}
+    <p class="alert alert-success">Hi <strong>{{ high_bid.owner }}</strong>! You have won this auction for ${{current_bid}}!</p>
+    {% else %}
+    <p class="alert alert-primary">This auction is closed. Won by <strong>{{ high_bid.owner }}</strong> who paid ${{ current_bid }}.</p>
+    {% endif %}
+{% else %}
+    {% if request.user != listing.owner %}           
+        <p class="{{message_type}}">{{message}}</p>
+        <form method="post" action="{% url 'auctions:listing_bid_create' listing.id %}">
+            {% csrf_token %}
+            {{ bid_form | crispy }}
+            <input type="submit" value="Submit" class="btn btn-primary">
+        </form>         
+    {% else %}
+    <p class="alert alert-warning">You are the owner of this listing</p>
+    <form method="post" action="{% url 'auctions:listing_detail' listing.id %}">
+        {% csrf_token %}        
+        <input type="submit" value="Close Listing" class="btn btn-primary">
+    </form>         
+    {% endif %}
+{% endif %}
+
+<hr />
+
+<form method="post" action="{% url 'auctions:listing_comment_create' listing.id %}">
+    {% csrf_token %}
+    {{ comment_form | crispy }}
+    <input type="submit" value="Submit" class="btn btn-primary">
+</form>
+
+<h3>Comments:</h3>
+    {% if comments %}    
+        {% for comment in comments %}
+            <p>{{ comment.text }} (<strong>{{comment.owner}}</strong>)</p>
+        {% endfor %}
+    {% else %}
+        <p>There are no comments yet.</p>
+    {% endif %}
+
+    <script>
+        function favListing(url, thing_id) {
+            console.log('Requesting JSON');
+            $.post(url, {},  function(rowz){
+                console.log(url, 'finished');
+                $("#unfavorite_star_"+thing_id).toggle();
+                $("#favorite_star_"+thing_id).toggle();
+            }).fail(function(xhr) {
+                alert('Url failed with '+xhr.status+' '+url);
+            });
+        }
+    </script> 
+{% endblock %}

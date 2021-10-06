@@ -1,0 +1,13 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+    <h2>{{ category.name }}</h2> 
+        {% for listing in category.listing_set.all %}
+            <p><a href="{% url 'auctions:listing_detail' listing.pk %}">{{listing.title}}</a> (sold by {{ listing.owner }})</p>
+            <p>{{ listing.text }}</p>
+            <img src="{{ listing.image }}" width="100px" />
+            <p>${{listing.price}}</p>
+            <hr />
+        {% endfor %}
+{% endblock %}

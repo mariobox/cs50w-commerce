@@ -1,0 +1,18 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+  <h2>Active Listings</h2>                                                                                                                                                                                                     
+    {% if listing_list %}                                                                                                                                                                                                                                                                                                                  
+      {% for listing in listing_list %}                                                                                                                                                                                        
+        <p>
+          <a href="{% url 'auctions:listing_detail'  listing.id %}">{{ listing.title }}</a> (sold by {{ listing.owner }})
+        </p>
+        <p>{{ listing.text}}</p>
+        <img src="{{listing.image}}" width="100px" /><br />
+        <p>Price: ${{ listing.price }}</p>   
+        <hr />
+      {% endfor %}       
+    {% else %}
+      <p>There are no listings in the database.</p>
+    {% endif %}     
+{% endblock %}

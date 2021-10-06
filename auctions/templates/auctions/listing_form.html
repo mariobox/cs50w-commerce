@@ -1,0 +1,21 @@
+{% extends "auctions/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block body %}
+
+    <h2>Create Listing</h2>
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    <p>
+        <form action="" method="post" id="upload_form" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ listing_form | crispy }}
+          <input type="submit" value="Submit">
+          <input type="submit" value="Cancel" onclick="window.location.href='' ; return false;">
+        </form>
+      </p>
+
+{% endblock %}
